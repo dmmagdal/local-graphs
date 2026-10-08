@@ -1,0 +1,68 @@
+[project]
+name = "local-vectors"
+version = "0.1.7"
+description = "A high-performance, local-first embedding utility for RAG and GraphRAG."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    {name = "Diego Magdaleno", email = "magdaleno_m@sbcglobal.net"}
+]
+classifiers = [
+	"Programming Language :: Python :: 3.10",
+    "Operating System :: OS Independent",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence"
+]
+dependencies = [
+    "accelerate>=1.10.1",
+    "einops>=0.4.1",
+    "huggingface-hub>=0.35.3",
+    "lancedb>=0.25.1",
+    "numpy>=2.0.2",
+    "pyarrow>=21.0.0",
+    "requests>=2.32.5",
+    "safetensors>=0.6.2",
+    "tokenizers>=0.22.0",
+    "torch>=2.1.0",
+    "transformers>=4.56.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-mock>=3.12.0",
+]
+
+# GPU configuration settings
+# 1. Define the special indices for GPU hardware
+[[tool.uv.index]]
+name = "pypi"
+url = "https://pypi.org/simple"
+default = true
+
+[[tool.uv.index]]
+name = "pytorch-cu124"
+url = "https://download.pytorch.org/whl/cu124"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-rocm"
+url = "https://download.pytorch.org/whl/rocm6.0"
+explicit = true
+
+# 2. Map the hardware to the correct index using markers
+[tool.uv.sources]
+torch = [
+  # Use CUDA for Linux/Windows (if NVIDIA is detected or as a default for those OSs)
+  { index = "pytorch-cu124", marker = "sys_platform != 'darwin'" },
+  # Standard PyPI (Apple Silicon / CPU) for macOS
+  { index = "pypi", marker = "sys_platform == 'darwin'" },
+]
+torchvision = [
+  { index = "pytorch-cu124", marker = "sys_platform != 'darwin'" },
+  { index = "pypi", marker = "sys_platform == 'darwin'" },
+]
+
+[build-system]
+requires = ["hatchling>=1.21.0"] # Specify a minimum version for robustness
+build-backend = "hatchling.build"
